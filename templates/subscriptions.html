@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscriptions — SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="/static/js/app.js"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/dashboard" style="text-decoration:none;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link active">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:1100px;margin:0 auto;padding:2rem 1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <div>
+                <h1 style="font-size:1.8rem;font-weight:700;color:#f1f5f9;margin:0;">🔄 Subscriptions</h1>
+                <p style="color:#64748b;font-size:0.9rem;margin:0.3rem 0 0;">Track your recurring subscriptions &
+                    memberships</p>
+            </div>
+            <div style="display:flex;gap:0.75rem;">
+                <button onclick="detectSubscriptions()" class="btn btn-secondary"
+                    style="padding:8px 16px;font-size:0.85rem;">🔍 Auto-Detect</button>
+                <button onclick="showAddModal()" class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem;">+
+                    Add Subscription</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem;">
+            <div class="metric-card"
+                style="background:linear-gradient(135deg,#7209B7,#560BAD);color:white;border-radius:16px;padding:1.5rem;">
+                <div style="font-size:0.8rem;opacity:0.8;">Monthly Cost</div>
+                <div id="monthlyTotal" style="font-size:1.8rem;font-weight:700;">₹0</div>
+            </div>
+            <div class="metric-card"
+                style="background:linear-gradient(135deg,#4361EE,#3A0CA3);color:white;border-radius:16px;padding:1.5rem;">
+                <div style="font-size:0.8rem;opacity:0.8;">Yearly Cost</div>
+                <div id="yearlyTotal" style="font-size:1.8rem;font-weight:700;">₹0</div>
+            </div>
+            <div class="metric-card"
+                style="background:linear-gradient(135deg,#06D6A0,#059669);color:white;border-radius:16px;padding:1.5rem;">
+                <div style="font-size:0.8rem;opacity:0.8;">Active Subscriptions</div>
+                <div id="activeCount" style="font-size:1.8rem;font-weight:700;">0</div>
+            </div>
+        </div>
+
+        <!-- Detected Subscriptions Banner -->
+        <div id="detectedBanner"
+            style="display:none;background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FB923C;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+            <h3 style="margin:0 0 0.75rem;font-size:1rem;color:#9A3412;">🔍 Auto-Detected Subscriptions</h3>
+            <div id="detectedList"></div>
+        </div>
+
+        <!-- Subscriptions List -->
+        <div class="settings-card" style="border-radius:16px;padding:1.5rem;">
+            <h3 style="margin:0 0 1rem;font-size:1.1rem;color:#f1f5f9;">Your Subscriptions</h3>
+            <div id="subscriptionsList">
+                <div style="text-align:center;color:#94a3b8;padding:2rem;">Loading subscriptions...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="addModal"
+        style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+        <div
+            style="background:white;border-radius:16px;padding:2rem;max-width:480px;width:90%;max-height:90vh;overflow-y:auto;">
+            <h3 id="modalTitle" style="margin:0 0 1.5rem;font-size:1.2rem;">Add Subscription</h3>
+            <div style="display:flex;flex-direction:column;gap:1rem;">
+                <input id="subName" type="text" placeholder="Subscription name (e.g., Netflix)" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+                <input id="subAmount" type="number" placeholder="Amount (₹)" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+                <select id="subFrequency" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+                <select id="subCategory" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+                    <option value="Entertainment">🎬 Entertainment</option>
+                    <option value="Utilities & Bills">💡 Utilities & Bills</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="Healthcare">🏥 Healthcare</option>
+                    <option value="Online Shopping">🛍️ Online Shopping</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+                <input id="subNextDue" type="date" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+                <input id="subNotes" type="text" placeholder="Notes (optional)" class="form-input"
+                    style="padding:10px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:0.9rem;">
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-top:1.5rem;justify-content:flex-end;">
+                <button onclick="closeModal()" class="btn btn-secondary"
+                    style="padding:8px 20px;font-size:0.85rem;">Cancel</button>
+                <button onclick="saveSubscription()" class="btn btn-primary"
+                    style="padding:8px 20px;font-size:0.85rem;">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allSubs = [];
+
+        async function loadSubscriptions() {
+            const data = await apiGet('/api/subscriptions');
+            if (data.success) {
+                allSubs = data.subscriptions;
+                document.getElementById('monthlyTotal').textContent = formatINR(data.monthly_total);
+                document.getElementById('yearlyTotal').textContent = formatINR(data.yearly_total);
+                document.getElementById('activeCount').textContent = allSubs.filter(s => s.is_active).length;
+                renderSubscriptions();
+            }
+        }
+
+        function renderSubscriptions() {
+            const container = document.getElementById('subscriptionsList');
+            if (!allSubs.length) {
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:2rem;">No subscriptions yet. Click <b>+ Add Subscription</b> or <b>Auto-Detect</b> to get started.</div>';
+                return;
+            }
+            container.innerHTML = allSubs.map(s => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid rgba(255,255,255,0.06);${!s.is_active ? 'opacity:0.5' : ''}">
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="width:42px;height:42px;border-radius:12px;background:${s.is_active ? 'linear-gradient(135deg,#7209B7,#560BAD)' : '#94a3b8'};display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;">
+                            ${getCategoryIcon(s.category)}
+                        </div>
+                        <div>
+                            <div style="font-weight:600;color:#f1f5f9;font-size:0.95rem;">${s.name}</div>
+                            <div style="font-size:0.8rem;color:#64748b;">${s.frequency} • ${s.category}${s.next_due_date ? ' • Due: ' + formatDateIndian(s.next_due_date) : ''}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="font-weight:700;color:#f1f5f9;font-size:1.05rem;">${formatINR(s.amount)}</div>
+                        <button onclick="deleteSub(${s.id})" style="background:none;border:none;cursor:pointer;font-size:1.1rem;" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function detectSubscriptions() {
+            showToast('Scanning expenses for recurring patterns...', 'info');
+            const data = await apiGet('/api/subscriptions/detect');
+            if (data.success && data.detected.length) {
+                const banner = document.getElementById('detectedBanner');
+                banner.style.display = 'block';
+                document.getElementById('detectedList').innerHTML = data.detected.map(d => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:white;border-radius:8px;margin-bottom:0.5rem;">
+                        <div>
+                            <b>${d.merchant}</b> — ${formatINR(d.amount)} / ${d.frequency}
+                            <span style="font-size:0.75rem;color:#64748b;"> (${d.occurrences} occurrences, ${d.confidence}% confidence)</span>
+                        </div>
+                        <button onclick="addDetected('${d.merchant}',${d.amount},'${d.frequency}')" class="btn btn-primary" style="padding:4px 12px;font-size:0.8rem;">+ Track</button>
+                    </div>
+                `).join('');
+            } else {
+                showToast('No new recurring subscriptions detected', 'info');
+            }
+        }
+
+        async function addDetected(merchant, amount, frequency) {
+            await apiPost('/api/subscriptions', { name: merchant, merchant, amount, frequency });
+            showToast(`${merchant} added as subscription!`, 'success');
+            loadSubscriptions();
+        }
+
+        function showAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+            document.getElementById('modalTitle').textContent = 'Add Subscription';
+        }
+        function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+        async function saveSubscription() {
+            const data = {
+                name: document.getElementById('subName').value,
+                amount: parseFloat(document.getElementById('subAmount').value),
+                frequency: document.getElementById('subFrequency').value,
+                category: document.getElementById('subCategory').value,
+                next_due_date: document.getElementById('subNextDue').value,
+                notes: document.getElementById('subNotes').value
+            };
+            if (!data.name || !data.amount) { showToast('Name and amount are required', 'error'); return; }
+            const res = await apiPost('/api/subscriptions', data);
+            if (res.success) { showToast('Subscription added!', 'success'); closeModal(); loadSubscriptions(); }
+            else { showToast(res.error || 'Failed to add', 'error'); }
+        }
+
+        async function deleteSub(id) {
+            if (!confirm('Delete this subscription?')) return;
+            const res = await apiDelete(`/api/subscriptions/${id}`);
+            if (res.success) { showToast('Subscription deleted', 'success'); loadSubscriptions(); }
+        }
+
+        // Notification badge
+        async function loadNotifBadge() {
+            const data = await apiGet('/api/notifications/unread-count');
+            if (data.success && data.count > 0) {
+                document.getElementById('notifBadge').style.display = 'inline';
+                document.getElementById('notifBadge').textContent = data.count;
+            }
+        }
+
+        loadSubscriptions();
+        loadNotifBadge();
+    </script>
+</body>
+
+</html>

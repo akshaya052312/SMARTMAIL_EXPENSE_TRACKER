@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calendar — SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="/static/js/app.js"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/dashboard" style="text-decoration:none;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link active">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:1100px;margin:0 auto;padding:2rem 1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <div>
+                <h1 style="font-size:1.8rem;font-weight:700;color:#f1f5f9;margin:0;">📅 Financial Calendar</h1>
+                <p style="color:#64748b;font-size:0.9rem;margin:0.3rem 0 0;">Upcoming bills, subscriptions, and expense
+                    history</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <button onclick="prevMonth()" class="btn btn-secondary"
+                    style="padding:6px 14px;font-size:0.9rem;">←</button>
+                <span id="monthLabel"
+                    style="font-weight:600;font-size:1.1rem;min-width:160px;text-align:center;"></span>
+                <button onclick="nextMonth()" class="btn btn-secondary"
+                    style="padding:6px 14px;font-size:0.9rem;">→</button>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#64748b;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#118AB2;display:inline-block;"></span>
+                Bills
+            </span>
+            <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#64748b;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#7209B7;display:inline-block;"></span>
+                Subscriptions
+            </span>
+            <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#64748b;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#EF476F;display:inline-block;"></span>
+                Expenses
+            </span>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="settings-card" style="border-radius:16px;padding:1.5rem;">
+            <div
+                style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;">
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Sun</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Mon</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Tue</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Wed</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Thu</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Fri</div>
+                <div
+                    style="background:rgba(255,255,255,0.04);padding:0.6rem;text-align:center;font-weight:600;font-size:0.8rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    Sat</div>
+            </div>
+            <div id="calendarGrid"
+                style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 12px 12px;overflow:hidden;">
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="settings-card" style="border-radius:16px;padding:1.5rem;margin-top:1.5rem;">
+            <h3 style="margin:0 0 1rem;font-size:1.1rem;color:#f1f5f9;">📋 Upcoming Events</h3>
+            <div id="upcomingList">
+                <div style="text-align:center;color:#94a3b8;padding:1.5rem;">Loading events...</div>
+            </div>
+        </div>
+
+        <!-- Add Reminder -->
+        <div class="settings-card" style="border-radius:16px;padding:1.5rem;margin-top:1.5rem;">
+            <h3 style="margin:0 0 1rem;font-size:1.1rem;color:#f1f5f9;">⏰ Add Bill Reminder</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.75rem;align-items:end;">
+                <div>
+                    <label style="font-size:0.8rem;color:#64748b;">Title</label>
+                    <input id="reminderTitle" type="text" placeholder="e.g., Electricity Bill"
+                        style="padding:8px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.85rem;width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem;color:#64748b;">Amount (₹)</label>
+                    <input id="reminderAmount" type="number" placeholder="Amount"
+                        style="padding:8px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.85rem;width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem;color:#64748b;">Due Date</label>
+                    <input id="reminderDate" type="date"
+                        style="padding:8px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.85rem;width:100%;">
+                </div>
+                <button onclick="addReminder()" class="btn btn-primary"
+                    style="padding:8px 16px;font-size:0.85rem;">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentYear, currentMonth, allEvents = [];
+
+        function init() {
+            const now = new Date();
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth();
+            loadCalendar();
+        }
+
+        function prevMonth() { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } loadCalendar(); }
+        function nextMonth() { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } loadCalendar(); }
+
+        async function loadCalendar() {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('monthLabel').textContent = `${months[currentMonth]} ${currentYear}`;
+
+            const start = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+            const endDate = new Date(currentYear, currentMonth + 1, 0);
+            const end = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${endDate.getDate()}`;
+
+            const data = await apiGet(`/api/calendar/events?start=${start}&end=${end}`);
+            allEvents = data.success ? data.events : [];
+            renderCalendar();
+            renderUpcoming();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date();
+
+            let html = '';
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div style="padding:0.5rem;min-height:70px;background:rgba(255,255,255,0.02);border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);"></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = allEvents.filter(e => e.date === dateStr);
+                const isToday = today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+                html += `<div style="padding:0.4rem;min-height:70px;border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);${isToday ? 'background:rgba(99,102,241,0.12);' : ''}">
+                    <div style="font-size:0.8rem;font-weight:${isToday ? '700' : '500'};color:${isToday ? '#818cf8' : '#94a3b8'};margin-bottom:0.2rem;">${day}</div>
+                    ${dayEvents.slice(0, 3).map(e => `<div style="font-size:0.65rem;padding:1px 4px;border-radius:4px;margin-bottom:1px;background:${e.color}15;color:${e.color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${e.title} — ₹${e.amount}">${e.title.slice(0, 12)}</div>`).join('')}
+                    ${dayEvents.length > 3 ? `<div style="font-size:0.6rem;color:#64748b;">+${dayEvents.length - 3} more</div>` : ''}
+                </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function renderUpcoming() {
+            const container = document.getElementById('upcomingList');
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = allEvents.filter(e => e.date >= today && e.type !== 'expense').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 10);
+
+            if (!upcoming.length) {
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:1rem;">No upcoming bills or subscriptions this month.</div>';
+                return;
+            }
+
+            container.innerHTML = upcoming.map(e => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:${e.color};"></span>
+                        <div>
+                            <div style="font-weight:600;font-size:0.9rem;color:#f1f5f9;">${e.title}</div>
+                            <div style="font-size:0.8rem;color:#64748b;">${formatDateIndian(e.date)} • ${e.type}</div>
+                        </div>
+                    </div>
+                    <div style="font-weight:700;color:#f1f5f9;">${formatINR(e.amount)}</div>
+                </div>
+            `).join('');
+        }
+
+        async function addReminder() {
+            const title = document.getElementById('reminderTitle').value;
+            const amount = parseFloat(document.getElementById('reminderAmount').value);
+            const due_date = document.getElementById('reminderDate').value;
+            if (!title || !due_date) { showToast('Title and due date required', 'error'); return; }
+            const res = await apiPost('/api/reminders', { title, amount: amount || 0, due_date });
+            if (res.success) {
+                showToast('Reminder added!', 'success');
+                document.getElementById('reminderTitle').value = '';
+                document.getElementById('reminderAmount').value = '';
+                document.getElementById('reminderDate').value = '';
+                loadCalendar();
+            } else { showToast(res.error || 'Failed', 'error'); }
+        }
+
+        async function loadNotifBadge() {
+            const data = await apiGet('/api/notifications/unread-count');
+            if (data.success && data.count > 0) {
+                document.getElementById('notifBadge').style.display = 'inline';
+                document.getElementById('notifBadge').textContent = data.count;
+            }
+        }
+
+        init();
+        loadNotifBadge();
+    </script>
+</body>
+
+</html>

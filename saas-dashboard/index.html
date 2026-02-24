@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusBoard — SaaS Analytics Dashboard</title>
+    <meta name="description"
+        content="NexusBoard is a modern SaaS analytics dashboard with real-time metrics, revenue tracking, and team insights.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Ambient background orbs -->
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="logo-text">NexusBoard</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">Main</span>
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                    <span class="nav-badge">3</span>
+                </a>
+                <a href="#" class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item" data-page="revenue">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>Revenue</span>
+                    <span class="nav-badge accent">+12%</span>
+                </a>
+                <a href="#" class="nav-item" data-page="customers">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">Management</span>
+                <a href="#" class="nav-item" data-page="projects">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Projects</span>
+                    <span class="nav-badge">7</span>
+                </a>
+                <a href="#" class="nav-item" data-page="tasks">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Tasks</span>
+                </a>
+                <a href="#" class="nav-item" data-page="calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
+                </a>
+                <a href="#" class="nav-item" data-page="messages">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                    <span class="nav-badge warn">5</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">System</span>
+                <a href="#" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="nav-item" data-page="help">
+                    <i class="fas fa-life-ring"></i>
+                    <span>Help Center</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="storage-widget">
+                <div class="storage-info">
+                    <i class="fas fa-cloud"></i>
+                    <span>Storage</span>
+                </div>
+                <div class="storage-bar">
+                    <div class="storage-fill" style="width: 68%"></div>
+                </div>
+                <span class="storage-text">6.8 GB of 10 GB used</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ========== TOP NAVBAR ========== -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" id="hamburgerMenu" aria-label="Open menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search anything..." id="globalSearch">
+                    <kbd>⌘K</kbd>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="topbar-btn" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="topbar-btn notification-btn" id="notifBtn" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-dot"></span>
+                </button>
+                <div class="profile-section" id="profileSection">
+                    <div class="avatar">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=NexusUser" alt="User avatar">
+                        <span class="status-dot online"></span>
+                    </div>
+                    <div class="profile-info">
+                        <span class="profile-name">Alex Morgan</span>
+                        <span class="profile-role">Admin</span>
+                    </div>
+                    <i class="fas fa-chevron-down profile-arrow"></i>
+
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="#"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="#"><i class="fas fa-credit-card"></i> Billing</a>
+                        <hr>
+                        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ========== PAGE CONTENT ========== -->
+        <div class="page-content">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, Alex! Here's what's happening today.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-ghost" id="exportBtn">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-primary" id="addWidgetBtn">
+                        <i class="fas fa-plus"></i> Add Widget
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== KPI CARDS ========== -->
+            <div class="kpi-grid">
+                <div class="kpi-card" data-animate="fade-up" style="--delay: 0.1s">
+                    <div class="kpi-header">
+                        <div class="kpi-icon blue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 23.5%</span>
+                    </div>
+                    <div class="kpi-value" data-count="84254">$0</div>
+                    <div class="kpi-label">Total Revenue</div>
+                    <div class="kpi-sparkline" id="sparkRevenue"></div>
+                </div>
+
+                <div class="kpi-card" data-animate="fade-up" style="--delay: 0.2s">
+                    <div class="kpi-header">
+                        <div class="kpi-icon purple">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12.8%</span>
+                    </div>
+                    <div class="kpi-value" data-count="2847">0</div>
+                    <div class="kpi-label">Active Users</div>
+                    <div class="kpi-sparkline" id="sparkUsers"></div>
+                </div>
+
+                <div class="kpi-card" data-animate="fade-up" style="--delay: 0.3s">
+                    <div class="kpi-header">
+                        <div class="kpi-icon green">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 8.2%</span>
+                    </div>
+                    <div class="kpi-value" data-count="1432">0</div>
+                    <div class="kpi-label">New Orders</div>
+                    <div class="kpi-sparkline" id="sparkOrders"></div>
+                </div>
+
+                <div class="kpi-card" data-animate="fade-up" style="--delay: 0.4s">
+                    <div class="kpi-header">
+                        <div class="kpi-icon orange">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 2.1%</span>
+                    </div>
+                    <div class="kpi-value" data-count="4.8" data-suffix="%" data-decimal="true">0%</div>
+                    <div class="kpi-label">Churn Rate</div>
+                    <div class="kpi-sparkline" id="sparkChurn"></div>
+                </div>
+            </div>
+
+            <!-- ========== CHARTS ROW ========== -->
+            <div class="charts-grid">
+                <div class="glass-card chart-card large" data-animate="fade-up" style="--delay: 0.5s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Revenue Overview</h3>
+                            <p class="card-subtitle">Monthly revenue performance</p>
+                        </div>
+                        <div class="card-actions">
+                            <div class="tab-pills">
+                                <button class="pill active" data-range="week">Week</button>
+                                <button class="pill" data-range="month">Month</button>
+                                <button class="pill" data-range="year">Year</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card chart-card" data-animate="fade-up" style="--delay: 0.6s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Traffic Sources</h3>
+                            <p class="card-subtitle">Where users come from</p>
+                        </div>
+                        <button class="icon-btn"><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                    <div class="chart-container doughnut-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                    <div class="chart-legend" id="trafficLegend"></div>
+                </div>
+            </div>
+
+            <!-- ========== DATA ROW ========== -->
+            <div class="data-grid">
+                <!-- Recent Transactions -->
+                <div class="glass-card" data-animate="fade-up" style="--delay: 0.7s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Recent Transactions</h3>
+                            <p class="card-subtitle">Latest 5 transactions</p>
+                        </div>
+                        <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="transactions-list" id="transactionsList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Team Activity -->
+                <div class="glass-card" data-animate="fade-up" style="--delay: 0.8s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Team Activity</h3>
+                            <p class="card-subtitle">Recent activity feed</p>
+                        </div>
+                        <button class="icon-btn"><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== BOTTOM ROW ========== -->
+            <div class="bottom-grid">
+                <!-- Top Products -->
+                <div class="glass-card" data-animate="fade-up" style="--delay: 0.9s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Top Products</h3>
+                            <p class="card-subtitle">Best performing this month</p>
+                        </div>
+                    </div>
+                    <div class="products-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Sales</th>
+                                    <th>Revenue</th>
+                                    <th>Growth</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="glass-card quick-stats-card" data-animate="fade-up" style="--delay: 1.0s">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Performance</h3>
+                            <p class="card-subtitle">Key metrics summary</p>
+                        </div>
+                    </div>
+                    <div class="quick-stats">
+                        <div class="stat-ring-item">
+                            <div class="stat-ring" data-percent="78" data-color="#6366f1">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="ring-bg" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="ring-fill" stroke="#6366f1" stroke-dasharray="78, 100" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="ring-value">78%</span>
+                            </div>
+                            <span class="stat-ring-label">Uptime</span>
+                        </div>
+                        <div class="stat-ring-item">
+                            <div class="stat-ring" data-percent="92" data-color="#8b5cf6">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="ring-bg" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="ring-fill" stroke="#8b5cf6" stroke-dasharray="92, 100" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="ring-value">92%</span>
+                            </div>
+                            <span class="stat-ring-label">Satisfaction</span>
+                        </div>
+                        <div class="stat-ring-item">
+                            <div class="stat-ring" data-percent="64" data-color="#ec4899">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="ring-bg" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="ring-fill" stroke="#ec4899" stroke-dasharray="64, 100" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="ring-value">64%</span>
+                            </div>
+                            <span class="stat-ring-label">Conversion</span>
+                        </div>
+                        <div class="stat-ring-item">
+                            <div class="stat-ring" data-percent="85" data-color="#14b8a6">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="ring-bg" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="ring-fill" stroke="#14b8a6" stroke-dasharray="85, 100" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="ring-value">85%</span>
+                            </div>
+                            <span class="stat-ring-label">Retention</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.page-content -->
+    </main>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notifPanel">
+        <div class="notif-header">
+            <h3>Notifications</h3>
+            <button class="text-btn" id="markAllRead">Mark all read</button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

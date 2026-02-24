@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartMail Expense Tracker{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 40% at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                linear-gradient(160deg, #0a0a1a 0%, #0f0f2d 40%, #141432 100%);
+            background-attachment: fixed;
+            color: #f1f5f9;
+        }
+
+        .navbar {
+            background: rgba(10, 10, 30, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f1f5f9;
+            text-decoration: none;
+        }
+
+        .nav-brand i {
+            color: #818cf8;
+            font-size: 1.5em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, 0.12);
+            color: #818cf8;
+        }
+
+        .nav-link.logout {
+            background: #ef476f;
+            color: white;
+        }
+
+        .nav-link.logout:hover {
+            background: #d43d63;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <i class="fas fa-envelope"></i>
+            <span>SmartMail Expense Tracker</span>
+        </a>
+
+        <div class="nav-links">
+            {% if session.user_id %}
+            <a href="/dashboard" class="nav-link">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="/email-settings" class="nav-link">
+                <i class="fas fa-cog"></i> Email Settings
+            </a>
+            <a href="#" onclick="logout()" class="nav-link logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            {% else %}
+            <a href="/login" class="nav-link">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="/register" class="nav-link" style="background: #6366f1; color: white;">
+                <i class="fas fa-user-plus"></i> Register
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications — SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="/static/js/app.js"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/dashboard" style="text-decoration:none;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell active" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:800px;margin:0 auto;padding:2rem 1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <div>
+                <h1 style="font-size:1.8rem;font-weight:700;color:#f1f5f9;margin:0;">🔔 Notifications</h1>
+                <p style="color:#64748b;font-size:0.9rem;margin:0.3rem 0 0;">Budget alerts, bill reminders & spending
+                    notifications</p>
+            </div>
+            <button onclick="markAllRead()" class="btn btn-secondary" style="padding:8px 16px;font-size:0.85rem;">✓ Mark
+                All Read</button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+            <button onclick="filterNotifs('all')" id="tab-all" class="notif-tab active"
+                style="padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:#4361EE;color:white;cursor:pointer;font-size:0.8rem;font-weight:500;">All</button>
+            <button onclick="filterNotifs('danger')" id="tab-danger" class="notif-tab"
+                style="padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#64748b;cursor:pointer;font-size:0.8rem;">🚨
+                Alerts</button>
+            <button onclick="filterNotifs('warning')" id="tab-warning" class="notif-tab"
+                style="padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#64748b;cursor:pointer;font-size:0.8rem;">⚠️
+                Warnings</button>
+            <button onclick="filterNotifs('success')" id="tab-success" class="notif-tab"
+                style="padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#64748b;cursor:pointer;font-size:0.8rem;">✅
+                Success</button>
+            <button onclick="filterNotifs('info')" id="tab-info" class="notif-tab"
+                style="padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#64748b;cursor:pointer;font-size:0.8rem;">ℹ️
+                Info</button>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notifList" class="settings-card" style="border-radius:16px;padding:0;overflow:hidden;">
+            <div style="text-align:center;color:#94a3b8;padding:3rem;">Loading notifications...</div>
+        </div>
+    </div>
+
+    <script>
+        let allNotifs = [];
+        let currentFilter = 'all';
+
+        async function loadNotifications() {
+            const data = await apiGet('/api/notifications?limit=100');
+            if (data.success) {
+                allNotifs = data.notifications;
+                renderNotifications();
+                updateBadge();
+            }
+        }
+
+        function filterNotifs(type) {
+            currentFilter = type;
+            document.querySelectorAll('.notif-tab').forEach(t => {
+                t.style.background = 'white'; t.style.color = '#64748b';
+            });
+            const tab = document.getElementById('tab-' + type);
+            if (tab) { tab.style.background = '#4361EE'; tab.style.color = 'white'; }
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notifList');
+            let filtered = currentFilter === 'all' ? allNotifs : allNotifs.filter(n => n.type === currentFilter);
+
+            if (!filtered.length) {
+                container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:3rem;">No notifications</div>';
+                return;
+            }
+
+            const typeColors = {
+                'danger': { bg: '#FEF2F2', border: '#FECACA', icon: '🚨' },
+                'warning': { bg: '#FFFBEB', border: '#FDE68A', icon: '⚠️' },
+                'success': { bg: '#F0FDF4', border: '#BBF7D0', icon: '✅' },
+                'info': { bg: '#EFF6FF', border: '#BFDBFE', icon: 'ℹ️' }
+            };
+
+            container.innerHTML = filtered.map(n => {
+                const style = typeColors[n.type] || typeColors.info;
+                const timeAgo = getTimeAgo(n.created_at);
+                return `
+                <div style="display:flex;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06);background:${n.is_read ? 'transparent' : style.bg};cursor:pointer;transition:background 0.2s;" 
+                     onclick="markRead(${n.id}, '${n.link || ''}')">
+                    <div style="font-size:1.2rem;margin-top:2px;">${style.icon}</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:${n.is_read ? '500' : '700'};color:#f1f5f9;font-size:0.9rem;">${n.title}</div>
+                        <div style="font-size:0.85rem;color:#64748b;margin-top:0.2rem;">${n.message}</div>
+                        <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.3rem;">${timeAgo}</div>
+                    </div>
+                    ${!n.is_read ? '<div style="width:8px;height:8px;border-radius:50%;background:#4361EE;margin-top:6px;flex-shrink:0;"></div>' : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function getTimeAgo(dateStr) {
+            const diff = Date.now() - new Date(dateStr).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return `${mins}m ago`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h ago`;
+            const days = Math.floor(hrs / 24);
+            if (days < 7) return `${days}d ago`;
+            return formatDateIndian(dateStr);
+        }
+
+        async function markRead(id, link) {
+            await apiPost(`/api/notifications/${id}/read`, {});
+            if (link) window.location.href = link;
+            else { loadNotifications(); }
+        }
+
+        async function markAllRead() {
+            await apiPost('/api/notifications/read-all', {});
+            showToast('All notifications marked as read', 'success');
+            loadNotifications();
+        }
+
+        function updateBadge() {
+            const unread = allNotifs.filter(n => !n.is_read).length;
+            const badge = document.getElementById('notifBadge');
+            if (unread > 0) { badge.style.display = 'inline'; badge.textContent = unread; }
+            else { badge.style.display = 'none'; }
+        }
+
+        loadNotifications();
+    </script>
+</body>
+
+</html>

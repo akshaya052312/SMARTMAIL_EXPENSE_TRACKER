@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Settings - SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:800px;margin:0 auto;padding:2rem 1.5rem;">
+        <h1 style="font-size:1.75rem;font-weight:700;color:#f1f5f9;margin-bottom:0.5rem;">📧 Email Configuration</h1>
+        <p style="font-size:0.85rem;color:#64748b;margin-bottom:2rem;">Connect your email to automatically detect
+            expenses. Emails are checked every 60 seconds.</p>
+
+        <!-- Connected Accounts -->
+        <div class="email-config-card">
+            <div class="card-header">Connected Accounts</div>
+            <div id="connectedAccounts">
+                <div style="text-align:center;color:#94a3b8;padding:1.5rem;">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Add New Account -->
+        <div class="email-config-card">
+            <div class="card-header">➕ Add Email Account</div>
+
+            <!-- Provider Selection -->
+            <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Select your email provider:</p>
+            <div class="provider-grid">
+                <button class="provider-btn" data-provider="gmail" onclick="selectProvider('gmail')">
+                    <span class="provider-icon">📧</span>
+                    Gmail
+                </button>
+                <button class="provider-btn" data-provider="outlook" onclick="selectProvider('outlook')">
+                    <span class="provider-icon">📬</span>
+                    Outlook
+                </button>
+                <button class="provider-btn" data-provider="yahoo" onclick="selectProvider('yahoo')">
+                    <span class="provider-icon">📩</span>
+                    Yahoo
+                </button>
+                <button class="provider-btn" data-provider="rediffmail" onclick="selectProvider('rediffmail')">
+                    <span class="provider-icon">🇮🇳</span>
+                    Rediffmail
+                </button>
+            </div>
+
+            <!-- Connection Form -->
+            <div id="connectionForm" style="display:none;margin-top:1.5rem;">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="emailAddress" class="form-control" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>App Password</label>
+                    <input type="password" id="appPassword" class="form-control"
+                        placeholder="Enter app-specific password">
+                    <div id="providerHelp" style="font-size:0.75rem;color:#94a3b8;margin-top:4px;"></div>
+                </div>
+                <div style="display:flex;gap:0.75rem;">
+                    <button class="btn btn-secondary" onclick="testConnection()">🔍 Test Connection</button>
+                    <button class="btn btn-primary" onclick="addAccount()">✅ Connect Account</button>
+                </div>
+                <div id="testResult" style="margin-top:1rem;display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="email-config-card">
+            <div class="card-header">❓ Setup Guide</div>
+            <div style="font-size:0.85rem;color:#64748b;line-height:1.8;">
+                <p><strong>Gmail:</strong> Go to Google Account → Security → 2-Step Verification → App passwords →
+                    Generate a new app password</p>
+                <p style="margin-top:0.5rem;"><strong>Outlook:</strong> Go to Account Security → Additional security
+                    options → App passwords → Create new app password</p>
+                <p style="margin-top:0.5rem;"><strong>Yahoo:</strong> Go to Account Settings → Security → App passwords
+                    → Generate app password</p>
+                <p style="margin-top:0.5rem;"><strong>Rediffmail:</strong> Use your regular email password. Enable IMAP
+                    access in your Rediffmail settings.</p>
+                <p style="margin-top:1rem;font-size:0.8rem;">
+                    <strong>🔒 Security:</strong> Your credentials are stored securely. We only read your emails — we
+                    never send, delete, or modify them.
+                </p>
+                <p style="margin-top:0.5rem;font-size:0.8rem;">
+                    <strong>🇮🇳 Supported:</strong> Auto-detects expenses from Zomato, Swiggy, Flipkart, Amazon, IRCTC,
+                    Ola, Uber, PhonePe, Paytm, banking alerts, and 50+ Indian merchants.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedProvider = '';
+
+        function selectProvider(provider) {
+            selectedProvider = provider;
+            document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-provider="${provider}"]`).classList.add('active');
+            document.getElementById('connectionForm').style.display = 'block';
+            document.getElementById('testResult').style.display = 'none';
+
+            const help = {
+                gmail: '💡 Use an App Password from Google Account → Security → App Passwords',
+                outlook: '💡 Use an App Password from Microsoft Account → Security',
+                yahoo: '💡 Use an App Password from Yahoo Account → Security',
+                rediffmail: '💡 Use your Rediffmail login password. Enable IMAP in settings.'
+            };
+            document.getElementById('providerHelp').textContent = help[provider] || '';
+        }
+
+        async function testConnection() {
+            const email = document.getElementById('emailAddress').value.trim();
+            const password = document.getElementById('appPassword').value;
+            const resultDiv = document.getElementById('testResult');
+
+            if (!email || !password) { alert('Enter email and password'); return; }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="alert alert-info">🔄 Testing connection...</div>';
+
+            try {
+                const res = await fetch('/api/email/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, provider: selectedProvider })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">✅ ${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">❌ ${data.error}</div>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = '<div class="alert alert-error">❌ Connection test failed</div>';
+            }
+        }
+
+        async function addAccount() {
+            const email = document.getElementById('emailAddress').value.trim();
+            const password = document.getElementById('appPassword').value;
+
+            if (!email || !password || !selectedProvider) {
+                alert('Select provider and enter credentials');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/email/configs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email_address: email,
+                        provider: selectedProvider,
+                        app_password: password
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ Email account connected! Auto-sync will start detecting expenses.');
+                    loadAccounts();
+                    document.getElementById('emailAddress').value = '';
+                    document.getElementById('appPassword').value = '';
+                    document.getElementById('connectionForm').style.display = 'none';
+                    document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                alert('Failed to add account');
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const res = await fetch('/api/email/configs');
+                const data = await res.json();
+                const container = document.getElementById('connectedAccounts');
+
+                if (!data.success || !data.configs.length) {
+                    container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:1.5rem;">No email accounts connected yet. Add one below to start auto-syncing expenses.</div>';
+                    return;
+                }
+
+                container.innerHTML = data.configs.map(c => `
+                <div class="connected-account">
+                    <div class="account-info">
+                        <div class="account-status ${c.is_active ? 'active' : 'inactive'}"></div>
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:500;color:#f1f5f9;">${c.email_address}</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;">${c.provider} • Last sync: ${c.last_sync || 'Never'}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button class="btn btn-sm btn-secondary" onclick="toggleAccount(${c.id}, ${!c.is_active})">
+                            ${c.is_active ? '⏸ Pause' : '▶ Resume'}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAccount(${c.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function toggleAccount(id, active) {
+            try {
+                await fetch(`/api/email/configs/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_active: active })
+                });
+                loadAccounts();
+            } catch (e) { alert('Failed'); }
+        }
+
+        async function deleteAccount(id) {
+            if (!confirm('Remove this email account? Auto-sync will stop for this account.')) return;
+            try {
+                const res = await fetch(`/api/email/configs/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) loadAccounts();
+                else alert(data.error);
+            } catch (e) { alert('Failed'); }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAccounts);
+    </script>
+</body>
+
+</html>

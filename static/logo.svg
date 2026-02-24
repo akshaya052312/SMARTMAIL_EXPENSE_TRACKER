@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Rounded background -->
+  <rect width="36" height="36" rx="10" fill="url(#logoGrad)"/>
+  <!-- Subtle inner shine -->
+  <rect width="36" height="18" rx="10" fill="rgba(255,255,255,0.08)"/>
+  <!-- Rupee symbol lines -->
+  <!-- Top horizontal bar -->
+  <rect x="10" y="9" width="16" height="2.5" rx="1.25" fill="white"/>
+  <!-- Second horizontal bar -->
+  <rect x="10" y="14" width="12" height="2.5" rx="1.25" fill="white"/>
+  <!-- Vertical left stem -->
+  <rect x="10" y="9" width="2.5" height="18" rx="1.25" fill="white"/>
+  <!-- Diagonal stroke from mid to bottom-right -->
+  <line x1="13" y1="15" x2="24" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

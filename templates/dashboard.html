@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ===== Dashboard-specific styles ===== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .metric-card .metric-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card .metric-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card .metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-top: 0.25rem;
+        }
+
+        .metric-card .metric-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #ec4899);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .metric-card.positive .metric-value {
+            color: #10b981;
+        }
+
+        .metric-card.negative .metric-value {
+            color: #ef4444;
+        }
+
+        /* Charts grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: box-shadow 0.25s, background 0.25s;
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .chart-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-height: 300px;
+        }
+
+        /* Recent transactions */
+        .transactions-section {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .transactions-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+
+        .txn-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .txn-table thead th {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+            text-align: left;
+        }
+
+        .txn-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .txn-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .txn-table tbody td {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #94a3b8;
+        }
+
+        .txn-amount {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-family: 'Inter', monospace;
+        }
+
+        .cat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+        }
+
+        .payment-badge {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            font-weight: 500;
+        }
+
+        .source-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .source-dot.email {
+            background: #6366f1;
+        }
+
+        .source-dot.manual {
+            background: #F97316;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* Auto-sync indicator */
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #64748b;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .sync-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .page-header h1 span {
+            color: #818cf8;
+        }
+
+        .period-selector {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .period-btn {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .period-btn.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .period-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .add-expense-fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-expense-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Add expense modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(15, 15, 40, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: #f1f5f9;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .modal-content label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+        }
+
+        .modal-content input:focus,
+        .modal-content select:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .txn-table {
+                font-size: 0.78rem;
+            }
+
+            .txn-table thead th,
+            .txn-table tbody td {
+                padding: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link active">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#94a3b8;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#94a3b8;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem;">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1>Welcome back, <span>{{ username }}</span> 👋</h1>
+                <div class="sync-indicator">
+                    <div class="sync-pulse"></div>
+                    Auto-sync active — expenses update automatically
+                </div>
+            </div>
+            <div class="period-selector">
+                <button class="period-btn active" data-period="month">Month</button>
+                <button class="period-btn" data-period="week">Week</button>
+                <button class="period-btn" data-period="year">Year</button>
+                <button class="period-btn" data-period="fy">FY</button>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="dashboard-grid" id="metricsGrid">
+            <div class="metric-card" id="metricTotal">
+                <div class="metric-icon">💰</div>
+                <div class="metric-label">Total Expenses</div>
+                <div class="metric-value" id="totalAmount">₹0</div>
+                <div class="metric-sub" id="totalCount">0 transactions</div>
+            </div>
+            <div class="metric-card" id="metricDaily">
+                <div class="metric-icon">📊</div>
+                <div class="metric-label">Avg Daily Spend</div>
+                <div class="metric-value" id="avgDaily">₹0</div>
+                <div class="metric-sub">this period</div>
+            </div>
+            <div class="metric-card" id="metricLargest">
+                <div class="metric-icon">🔺</div>
+                <div class="metric-label">Largest Transaction</div>
+                <div class="metric-value" id="largestTxn">₹0</div>
+                <div class="metric-sub" id="largestSub"></div>
+            </div>
+            <div class="metric-card" id="metricTopCat">
+                <div class="metric-icon">🏷️</div>
+                <div class="metric-label">Top Category</div>
+                <div class="metric-value" id="topCategory">—</div>
+                <div class="metric-sub" id="topCatAmount"></div>
+            </div>
+            <div class="metric-card" id="metricEmail">
+                <div class="metric-icon">📧</div>
+                <div class="metric-label">Email Detected</div>
+                <div class="metric-value" id="emailCount">0</div>
+                <div class="metric-sub" id="emailSub">auto-synced expenses</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card full-width">
+                <h3>📈 Spending Trend (Last 30 Days)</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>🏷️ Category Breakdown</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>💳 Payment Methods</h3>
+                <div class="chart-container">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card full-width">
+                <h3>🏪 Top Merchants</h3>
+                <div class="chart-container">
+                    <canvas id="merchantChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="transactions-section">
+            <h3>🔄 Recent Transactions</h3>
+            <div id="transactionsBody">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Loading transactions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB: Add Expense -->
+    <button class="add-expense-fab" onclick="openAddModal()" title="Add Expense">+</button>
+
+    <!-- Add Expense Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <h3>➕ Add Expense</h3>
+            <div class="form-group">
+                <label>Amount (₹)</label>
+                <input type="number" id="expAmount" placeholder="Enter amount in ₹" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="expCategory" class="form-control">
+                    <option value="Food Delivery">🍕 Food Delivery</option>
+                    <option value="Groceries">🛒 Groceries</option>
+                    <option value="Online Shopping">🛍️ Online Shopping</option>
+                    <option value="Travel & Transport">🚗 Travel & Transport</option>
+                    <option value="Entertainment">🎬 Entertainment</option>
+                    <option value="Utilities & Bills">💡 Utilities & Bills</option>
+                    <option value="Healthcare">🏥 Healthcare</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="EMI & Loans">🏦 EMI & Loans</option>
+                    <option value="Investments">📈 Investments</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Merchant</label>
+                <input type="text" id="expMerchant" placeholder="e.g. Zomato, Flipkart, IRCTC">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="expDate">
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="expPayment" class="form-control">
+                    <option value="UPI">UPI</option>
+                    <option value="UPI - Google Pay">UPI - Google Pay</option>
+                    <option value="UPI - PhonePe">UPI - PhonePe</option>
+                    <option value="UPI - Paytm">UPI - Paytm</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="Net Banking">Net Banking</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Wallet">Wallet</option>
+                    <option value="EMI">EMI</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <input type="text" id="expDesc" placeholder="Brief note">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+                <button class="btn-save" onclick="saveExpense()">Save ₹ Expense</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== Indian Currency Formatter ==========
+        function formatINR(amount) {
+            if (amount === null || amount === undefined) return '₹0';
+            amount = parseFloat(amount);
+            if (isNaN(amount)) return '₹0';
+            // Use Intl with en-IN locale
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatINRFull(amount) {
+            if (amount === null || amount === undefined) return '₹0.00';
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(parseFloat(amount));
+        }
+
+        function formatCompact(amount) {
+            amount = parseFloat(amount) || 0;
+            if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + 'Cr';
+            if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + 'L';
+            if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + 'K';
+            return formatINR(amount);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        }
+
+        // ========== State ==========
+        let currentPeriod = 'month';
+        let chartInstances = {};
+
+        // ========== Period Selector ==========
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+                loadDashboard();
+            });
+        });
+
+        // ========== Load Dashboard ==========
+        async function loadDashboard() {
+            try {
+                const [summaryRes, trendsRes, merchantsRes, recentRes] = await Promise.all([
+                    fetch(`/api/summary?period=${currentPeriod}`),
+                    fetch('/api/analytics/trends?days=30'),
+                    fetch(`/api/analytics/merchants?period=${currentPeriod}`),
+                    fetch('/api/expenses/recent?limit=15')
+                ]);
+
+                const summaryData = await summaryRes.json();
+                const trendsData = await trendsRes.json();
+                const merchantsData = await merchantsRes.json();
+                const recentData = await recentRes.json();
+
+                if (summaryData.success) updateMetrics(summaryData);
+                if (summaryData.success) updateCategoryChart(summaryData.categories);
+                if (summaryData.success) updatePaymentChart(summaryData.payment_methods);
+                if (trendsData.success) updateTrendChart(trendsData.trends);
+                if (merchantsData.success) updateMerchantChart(merchantsData.merchants);
+                if (recentData.success) updateTransactions(recentData.expenses);
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+            }
+        }
+
+        // ========== Update Metrics ==========
+        function updateMetrics(data) {
+            const s = data.summary;
+            const cats = data.categories;
+
+            document.getElementById('totalAmount').textContent = formatINR(s.total);
+            document.getElementById('totalCount').textContent = `${s.count} transactions`;
+            document.getElementById('avgDaily').textContent = formatINR(s.avg_daily);
+            document.getElementById('largestTxn').textContent = formatINR(s.largest);
+
+            if (cats && cats.length > 0) {
+                document.getElementById('topCategory').textContent = cats[0].name;
+                document.getElementById('topCatAmount').textContent = formatINR(cats[0].total);
+            } else {
+                document.getElementById('topCategory').textContent = '—';
+                document.getElementById('topCatAmount').textContent = '';
+            }
+
+            document.getElementById('emailCount').textContent = s.email_count;
+        }
+
+        // ========== Charts ==========
+        const chartColors = [
+            '#6366f1', '#F97316', '#06B6D4', '#EF4444', '#10B981',
+            '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#818cf8', '#94a3b8'
+        ];
+
+        function updateTrendChart(trends) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (chartInstances.trend) chartInstances.trend.destroy();
+
+            const labels = trends.map(t => {
+                const d = new Date(t.date);
+                return `${d.getDate()}/${d.getMonth() + 1}`;
+            });
+            const values = trends.map(t => t.total);
+
+            chartInstances.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Spend (₹)',
+                        data: values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.12)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#6366f1',
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        borderWidth: 2.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => '₹' + new Intl.NumberFormat('en-IN').format(ctx.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => formatCompact(v),
+                                font: { size: 11 }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        x: {
+                            ticks: { font: { size: 11 }, maxRotation: 0, color: '#64748b' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCategoryChart(categories) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (chartInstances.category) chartInstances.category.destroy();
+
+            if (!categories || categories.length === 0) {
+                chartInstances.category = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: ['No Data'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.06)'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+                return;
+            }
+
+            chartInstances.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories.map(c => c.name),
+                    datasets: [{
+                        data: categories.map(c => c.total),
+                        backgroundColor: categories.map((c, i) => c.color || chartColors[i % chartColors.length]),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, padding: 12, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.label}: ₹${new Intl.NumberFormat('en-IN').format(ctx.parsed)}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePaymentChart(methods) {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            if (chartInstances.payment) chartInstances.payment.destroy();
+
+            if (!methods || methods.length === 0) {
+                chartInstances.payment = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: ['No Data'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.06)'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+                return;
+            }
+
+            chartInstances.payment = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: methods.map(m => m.method),
+                    datasets: [{
+                        data: methods.map(m => m.total),
+                        backgroundColor: chartColors.slice(0, methods.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, padding: 12, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.label}: ₹${new Intl.NumberFormat('en-IN').format(ctx.parsed)}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMerchantChart(merchants) {
+            const ctx = document.getElementById('merchantChart').getContext('2d');
+            if (chartInstances.merchant) chartInstances.merchant.destroy();
+
+            if (!merchants || merchants.length === 0) {
+                chartInstances.merchant = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: ['No Data'], datasets: [{ data: [0], backgroundColor: ['rgba(255,255,255,0.06)'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+                return;
+            }
+
+            chartInstances.merchant = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: merchants.map(m => m.name),
+                    datasets: [{
+                        label: 'Spent (₹)',
+                        data: merchants.map(m => m.total),
+                        backgroundColor: chartColors.slice(0, merchants.length).map(c => c + '33'),
+                        borderColor: chartColors.slice(0, merchants.length),
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => '₹' + new Intl.NumberFormat('en-IN').format(ctx.parsed.x)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: v => formatCompact(v),
+                                font: { size: 11 }
+                            },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        y: {
+                            ticks: { font: { size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== Transactions Table ==========
+        function updateTransactions(expenses) {
+            const container = document.getElementById('transactionsBody');
+
+            if (!expenses || expenses.length === 0) {
+                container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>No transactions yet. Add your first expense or connect your email for auto-syncing!</p>
+                </div>`;
+                return;
+            }
+
+            let html = `<table class="txn-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Merchant</th>
+                    <th>Category</th>
+                    <th>Payment</th>
+                    <th>Amount (₹)</th>
+                    <th>Confidence</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+            expenses.forEach(exp => {
+                const src = exp.source === 'email' ? 'email' : 'manual';
+                html += `<tr>
+                <td>${formatDate(exp.date)}</td>
+                <td>${exp.merchant || exp.description || '—'}</td>
+                <td><span class="cat-badge">${exp.icon || '📦'} ${exp.category || 'Other'}</span></td>
+                <td><span class="payment-badge">${exp.payment_method || 'Unknown'}</span></td>
+                <td class="txn-amount">${formatINR(exp.amount)}</td>
+                <td><span class="confidence-badge ${(exp.confidence || 50) >= 70 ? 'confidence-high' : (exp.confidence || 50) >= 40 ? 'confidence-mid' : 'confidence-low'}" title="Confidence: ${exp.confidence || 50}%">${exp.confidence || 50}%</span></td>
+                <td><span class="source-dot ${src}"></span>${src}</td>
+            </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ========== Add Expense Modal ==========
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+
+        async function saveExpense() {
+            const amount = document.getElementById('expAmount').value;
+            const category = document.getElementById('expCategory').value;
+            const merchant = document.getElementById('expMerchant').value;
+            const date = document.getElementById('expDate').value;
+            const payment_method = document.getElementById('expPayment').value;
+            const description = document.getElementById('expDesc').value;
+
+            if (!amount || !date) {
+                alert('Please enter amount and date');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/expenses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: parseFloat(amount),
+                        category,
+                        merchant,
+                        date,
+                        payment_method,
+                        description,
+                        currency: 'INR',
+                        source: 'manual'
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    closeAddModal();
+                    loadDashboard();
+                    // Clear form
+                    document.getElementById('expAmount').value = '';
+                    document.getElementById('expMerchant').value = '';
+                    document.getElementById('expDesc').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Failed to save expense');
+            }
+        }
+
+        // Close modal on overlay click
+        document.getElementById('addModal').addEventListener('click', function (e) {
+            if (e.target === this) closeAddModal();
+        });
+
+        // ========== Logout ==========
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        // ========== Auto-Refresh ==========
+        setInterval(() => {
+            loadDashboard();
+        }, 60000); // Refresh every 60 seconds
+
+        // ========== Init ==========
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+
+</html>

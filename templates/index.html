@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMail Expense Tracker - Track Your ₹ Expenses Automatically</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <meta name="description"
+        content="Indian expense tracker with automatic email detection. Track ₹ spending from Zomato, Flipkart, Amazon, UPI payments, and more.">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar" style="background:transparent;border:none;position:absolute;width:100%;z-index:100;">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/login" class="btn"
+                style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 20px;font-size:0.85rem;">Login</a>
+            <a href="/register" class="btn btn-primary" style="padding:8px 20px;font-size:0.85rem;">Get Started</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:1200px;margin:0 auto;padding:0 1.5rem;">
+        <!-- Hero -->
+        <div class="hero-section" style="padding-top:7rem;">
+            <h1>Track Every ₹ Rupee<br>Automatically 🇮🇳</h1>
+            <p>Connect your email and let SmartMail auto-detect expenses from Zomato, Flipkart, Amazon, IRCTC, UPI
+                payments, and 50+ Indian merchants. Zero effort expense tracking.</p>
+            <div class="hero-actions">
+                <a href="/register" class="btn btn-white">Start Free →</a>
+                <a href="/login" class="btn btn-outline">Login</a>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div style="text-align:center;margin:3rem 0 2rem;">
+            <h2 style="font-size:1.8rem;font-weight:700;color:#f1f5f9;">Built for India 🇮🇳</h2>
+            <p style="color:#64748b;font-size:0.95rem;max-width:600px;margin:0.5rem auto;">Everything you need to track
+                expenses the Indian way — in ₹, with UPI, and lakhs & crores formatting.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card animate-in">
+                <div class="feature-icon">📧</div>
+                <h3>Auto Email Detection</h3>
+                <p>Scans your inbox every 60 seconds. Detects expenses from order confirmations, payment receipts, and
+                    bank alerts automatically.</p>
+            </div>
+            <div class="feature-card animate-in" style="animation-delay:0.1s;">
+                <div class="feature-icon">🇮🇳</div>
+                <h3>Indian Categories</h3>
+                <p>Pre-built categories for Food Delivery, Online Shopping, UPI Payments, EMI & Loans, Investments, and
+                    more Indian spending patterns.</p>
+            </div>
+            <div class="feature-card animate-in" style="animation-delay:0.2s;">
+                <div class="feature-icon">📊</div>
+                <h3>Chart.js Analytics</h3>
+                <p>Beautiful spending trends, category breakdowns, payment method distribution, and top merchants — all
+                    in an interactive dashboard.</p>
+            </div>
+            <div class="feature-card animate-in" style="animation-delay:0.3s;">
+                <div class="feature-icon">💳</div>
+                <h3>Payment Tracking</h3>
+                <p>Detects UPI (GPay, PhonePe, Paytm), Credit Cards (RuPay, Visa), Debit Cards, Net Banking, EMI, and
+                    Wallet payments.</p>
+            </div>
+            <div class="feature-card animate-in" style="animation-delay:0.4s;">
+                <div class="feature-icon">🏪</div>
+                <h3>60+ Indian Merchants</h3>
+                <p>Recognizes Zomato, Swiggy, Flipkart, Amazon, BigBasket, Blinkit, Ola, Uber, IRCTC, BookMyShow, and
+                    many more.</p>
+            </div>
+            <div class="feature-card animate-in" style="animation-delay:0.5s;">
+                <div class="feature-icon">📋</div>
+                <h3>GST & FY Reports</h3>
+                <p>Extracts GST amounts from receipts. Reports follow Indian Financial Year (April–March). Export to CSV
+                    anytime.</p>
+            </div>
+        </div>
+
+        <!-- How it works -->
+        <div style="text-align:center;margin:4rem 0 2rem;">
+            <h2 style="font-size:1.8rem;font-weight:700;color:#f1f5f9;">How It Works</h2>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;margin-bottom:4rem;">
+            <div style="text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:0.75rem;">1️⃣</div>
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:0.5rem;">Create Account</h3>
+                <p style="font-size:0.85rem;color:#64748b;">Sign up in 30 seconds. No credit card required.</p>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:0.75rem;">2️⃣</div>
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:0.5rem;">Connect Email</h3>
+                <p style="font-size:0.85rem;color:#64748b;">Link Gmail, Outlook, Yahoo, or Rediffmail with an app
+                    password.</p>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:0.75rem;">3️⃣</div>
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:0.5rem;">Auto-Track ₹</h3>
+                <p style="font-size:0.85rem;color:#64748b;">Sit back! Expenses appear on your dashboard automatically
+                    with no sync buttons needed.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>SmartMail Expense Tracker — Built for India 🇮🇳 | Track every ₹ automatically</p>
+    </div>
+</body>
+
+</html>

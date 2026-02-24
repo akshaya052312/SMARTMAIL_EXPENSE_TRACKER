@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link">Reports</a>
+            <a href="/settings" class="nav-link active">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:900px;margin:0 auto;padding:2rem 1.5rem;">
+        <h1 style="font-size:1.75rem;font-weight:700;color:#f1f5f9;margin-bottom:2rem;">⚙️ Settings</h1>
+
+        <div class="settings-grid">
+            <!-- Currency Settings -->
+            <div class="settings-card">
+                <h3>💰 Currency & Format</h3>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Default Currency</div>
+                        <div class="setting-desc">Used across the app</div>
+                    </div>
+                    <select class="form-control" style="width:auto;" id="currencySelect">
+                        <option value="INR" selected>₹ Indian Rupee (INR)</option>
+                        <option value="USD">$ US Dollar (USD)</option>
+                        <option value="EUR">€ Euro (EUR)</option>
+                        <option value="GBP">£ British Pound (GBP)</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Indian Numbering System</div>
+                        <div class="setting-desc">Use lakhs & crores (₹1,00,000)</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="indianNumbering" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Date Format</div>
+                        <div class="setting-desc">Display dates throughout the app</div>
+                    </div>
+                    <select class="form-control" style="width:auto;" id="dateFormat">
+                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="settings-card">
+                <h3>🏷️ Expense Categories</h3>
+                <div id="categoriesList" style="max-height:300px;overflow-y:auto;">
+                    <div style="text-align:center;color:#94a3b8;padding:1rem;">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Account -->
+            <div class="settings-card">
+                <h3>👤 Account</h3>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Username</div>
+                        <div class="setting-desc" id="acctUsername">—</div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Email</div>
+                        <div class="setting-desc" id="acctEmail">—</div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Member Since</div>
+                        <div class="setting-desc" id="acctSince">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sync Info -->
+            <div class="settings-card">
+                <h3>🔄 Auto-Sync</h3>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Email Auto-Sync</div>
+                        <div class="setting-desc">Always on — checks every 60 seconds</div>
+                    </div>
+                    <span class="badge badge-success">Active</span>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Last Sync</div>
+                        <div class="setting-desc" id="lastSync">—</div>
+                    </div>
+                </div>
+                <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.75rem;">
+                    Expenses from connected email accounts are automatically detected and added — no manual sync
+                    required.
+                </p>
+            </div>
+
+            <!-- Data Management -->
+            <div class="settings-card" style="grid-column:1/-1;">
+                <h3>📁 Data Management</h3>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="exportAll()">📥 Export All Data (CSV)</button>
+                </div>
+                <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.75rem;">
+                    Export all your expense data in CSV format with ₹ values and Indian date formatting.
+                </p>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script>
+        function formatDate(d) {
+            if (!d) return '—';
+            const dt = new Date(d);
+            return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+        }
+        function formatINR(n) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parseFloat(n) || 0);
+        }
+
+        async function loadSettings() {
+            // User info
+            try {
+                const res = await fetch('/api/user');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('acctUsername').textContent = data.user.username;
+                    document.getElementById('acctEmail').textContent = data.user.email || 'Not set';
+                    document.getElementById('acctSince').textContent = formatDate(data.user.created_at);
+                }
+            } catch (e) { }
+
+            // Categories
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                if (data.success) {
+                    const list = document.getElementById('categoriesList');
+                    list.innerHTML = data.categories.map(c => `
+                    <div class="setting-row">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:1.2rem;">${c.icon || '📦'}</span>
+                            <div>
+                                <div class="setting-label">${c.name}</div>
+                                <div class="setting-desc">${c.keywords || 'No keywords'}</div>
+                            </div>
+                        </div>
+                        <div style="width:12px;height:12px;border-radius:50%;background:${c.color || '#6c757d'};"></div>
+                    </div>
+                `).join('');
+                }
+            } catch (e) { }
+
+            // Sync status
+            try {
+                const res = await fetch('/api/email/sync-status');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('lastSync').textContent = data.last_sync ? formatDate(data.last_sync) : 'Not yet synced';
+                }
+            } catch (e) { }
+        }
+
+        async function exportAll() {
+            try {
+                const res = await fetch('/api/expenses?limit=10000');
+                const data = await res.json();
+                if (!data.success || !data.expenses.length) { alert('No data to export'); return; }
+                let csv = 'Date,Merchant,Category,Payment Method,GST (₹),Amount (₹),Source,Transaction ID\n';
+                data.expenses.forEach(e => {
+                    csv += `${formatDate(e.date)},"${e.merchant || ''}","${e.category || ''}","${e.payment_method || ''}",${e.gst_amount || 0},${e.amount},"${e.source}","${e.transaction_id || ''}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `all_expenses_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) { alert('Export failed'); }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+
+</html>

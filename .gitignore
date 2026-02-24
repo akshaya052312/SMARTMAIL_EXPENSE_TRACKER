@@ -1,0 +1,29 @@
+# Virtual environment
+akshu/
+
+# Database files
+*.db
+*.sqlite
+instance/
+
+# Environment variables (secrets)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Sensitive files
+pass.txt
+expenses.csv
+expenses.db
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/

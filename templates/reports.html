@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - SmartMail Expense Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;">
+                <img src="/static/logo.svg" alt="SmartMail Logo" class="nav-logo">
+                <span class="nav-brand-text">SmartMail Tracker</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/subscriptions" class="nav-link">Subscriptions</a>
+            <a href="/budgets" class="nav-link">Budgets</a>
+            <a href="/investments" class="nav-link">Investments</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/reports" class="nav-link active">Reports</a>
+            <a href="/settings" class="nav-link">Settings</a>
+            <a href="/notifications" class="nav-link notif-bell" title="Notifications">🔔<span id="notifBadge"
+                    class="notif-badge" style="display:none;">0</span></a>
+            <span style="color:#64748b;font-size:0.85rem;margin-left:0.5rem;">{{ username }}</span>
+            <button onclick="logout()" class="btn-logout"
+                style="background:none;border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;color:#64748b;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem;">
+        <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+            <div>
+                <h1 style="font-size:1.75rem;font-weight:700;color:#f1f5f9;">📊 Expense Reports</h1>
+                <p style="font-size:0.85rem;color:#64748b;margin-top:4px;">Detailed analytics in ₹ with Indian Financial
+                    Year support</p>
+            </div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <select id="reportPeriod" class="form-control" style="width:auto;min-width:160px;">
+                    <option value="month">This Month</option>
+                    <option value="week">This Week</option>
+                    <option value="year">This Year</option>
+                    <option value="fy">Financial Year (Apr-Mar)</option>
+                </select>
+                <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;">
+            <div class="card" style="text-align:center;">
+                <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Total Spent
+                </div>
+                <div id="rptTotal" style="font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-top:4px;">₹0</div>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Transactions
+                </div>
+                <div id="rptCount" style="font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-top:4px;">0</div>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Avg Per
+                    Transaction</div>
+                <div id="rptAvg" style="font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-top:4px;">₹0</div>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Email vs
+                    Manual</div>
+                <div id="rptSource" style="font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-top:4px;">0 / 0</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+            <div class="card">
+                <div class="card-header">📈 Spending Trend</div>
+                <div style="position:relative;height:280px;">
+                    <canvas id="rptTrendChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">🏷️ Category Distribution</div>
+                <div style="position:relative;height:280px;">
+                    <canvas id="rptCatChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <span>📋 All Transactions</span>
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" id="searchBox" class="form-control" style="width:200px;font-size:0.8rem;"
+                        placeholder="Search merchant / description...">
+                    <select id="filterCategory" class="form-control" style="width:auto;font-size:0.8rem;">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="filterPayment" class="form-control" style="width:auto;font-size:0.8rem;">
+                        <option value="">All Payments</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="txnTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Merchant</th>
+                            <th>Category</th>
+                            <th>Payment</th>
+                            <th>GST</th>
+                            <th>Amount (₹)</th>
+                            <th>Confidence</th>
+                            <th>Source</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txnBody">
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatINR(n) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parseFloat(n) || 0);
+        }
+        function formatDate(d) {
+            if (!d) return '—';
+            const dt = new Date(d);
+            return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+        }
+        function formatCompact(v) {
+            v = parseFloat(v) || 0;
+            if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + 'Cr';
+            if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + 'L';
+            if (v >= 1000) return '₹' + (v / 1000).toFixed(1) + 'K';
+            return formatINR(v);
+        }
+
+        let allExpenses = [];
+        let chartInstances = {};
+        const chartColors = ['#4F46E5', '#F97316', '#06B6D4', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#6366F1', '#64748B'];
+
+        document.getElementById('reportPeriod').addEventListener('change', loadReports);
+        document.getElementById('searchBox').addEventListener('input', filterTransactions);
+        document.getElementById('filterCategory').addEventListener('change', filterTransactions);
+        document.getElementById('filterPayment').addEventListener('change', filterTransactions);
+
+        async function loadReports() {
+            const period = document.getElementById('reportPeriod').value;
+            try {
+                const [sumRes, trendRes, expRes] = await Promise.all([
+                    fetch(`/api/summary?period=${period}`),
+                    fetch('/api/analytics/trends?days=90'),
+                    fetch(`/api/expenses?limit=200`)
+                ]);
+                const sumData = await sumRes.json();
+                const trendData = await trendRes.json();
+                const expData = await expRes.json();
+
+                if (sumData.success) {
+                    const s = sumData.summary;
+                    document.getElementById('rptTotal').textContent = formatINR(s.total);
+                    document.getElementById('rptCount').textContent = s.count;
+                    document.getElementById('rptAvg').textContent = formatINR(s.average);
+                    document.getElementById('rptSource').textContent = `${s.email_count} / ${s.manual_count}`;
+                    updateCatChart(sumData.categories);
+                }
+                if (trendData.success) updateTrendChart(trendData.trends);
+                if (expData.success) {
+                    allExpenses = expData.expenses;
+                    populateFilters(allExpenses);
+                    renderTransactions(allExpenses);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function updateTrendChart(trends) {
+            const ctx = document.getElementById('rptTrendChart').getContext('2d');
+            if (chartInstances.trend) chartInstances.trend.destroy();
+            chartInstances.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trends.map(t => { const d = new Date(t.date); return `${d.getDate()}/${d.getMonth() + 1}`; }),
+                    datasets: [{ label: 'Spend (₹)', data: trends.map(t => t.total), borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,0.08)', fill: true, tension: 0.4, pointRadius: 2, borderWidth: 2 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '₹' + new Intl.NumberFormat('en-IN').format(c.parsed.y) } } }, scales: { y: { beginAtZero: true, ticks: { callback: v => formatCompact(v), font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { ticks: { font: { size: 10 }, maxRotation: 0, maxTicksLimit: 15 }, grid: { display: false } } } }
+            });
+        }
+
+        function updateCatChart(cats) {
+            const ctx = document.getElementById('rptCatChart').getContext('2d');
+            if (chartInstances.cat) chartInstances.cat.destroy();
+            if (!cats || !cats.length) return;
+            chartInstances.cat = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: cats.map(c => c.name),
+                    datasets: [{ data: cats.map(c => c.total), backgroundColor: cats.map((c, i) => c.color || chartColors[i % chartColors.length]), borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10, usePointStyle: true } }, tooltip: { callbacks: { label: c => `${c.label}: ₹${new Intl.NumberFormat('en-IN').format(c.parsed)}` } } } }
+            });
+        }
+
+        function populateFilters(expenses) {
+            const cats = [...new Set(expenses.map(e => e.category).filter(Boolean))];
+            const payments = [...new Set(expenses.map(e => e.payment_method).filter(Boolean))];
+            const catSel = document.getElementById('filterCategory');
+            const pmSel = document.getElementById('filterPayment');
+            catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            pmSel.innerHTML = '<option value="">All Payments</option>' + payments.map(p => `<option value="${p}">${p}</option>`).join('');
+        }
+
+        function filterTransactions() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const cat = document.getElementById('filterCategory').value;
+            const pm = document.getElementById('filterPayment').value;
+            let filtered = allExpenses;
+            if (search) filtered = filtered.filter(e => (e.merchant || '').toLowerCase().includes(search) || (e.description || '').toLowerCase().includes(search) || (e.transaction_id || '').toLowerCase().includes(search));
+            if (cat) filtered = filtered.filter(e => e.category === cat);
+            if (pm) filtered = filtered.filter(e => e.payment_method === pm);
+            renderTransactions(filtered);
+        }
+
+        function renderTransactions(expenses) {
+            const tbody = document.getElementById('txnBody');
+            if (!expenses.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">No transactions found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = expenses.map(e => `<tr>
+            <td>${formatDate(e.date)}</td>
+            <td>${e.merchant || e.description || '—'}</td>
+            <td><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:0.72rem;background:#f1f5f9;color:#475569;">${e.icon || '📦'} ${e.category || 'Other'}</span></td>
+            <td><span style="font-size:0.72rem;padding:2px 8px;border-radius:6px;background:#ede9fe;color:#6d28d9;">${e.payment_method || 'Unknown'}</span></td>
+            <td style="color:#64748b;font-size:0.8rem;">${e.gst_amount ? formatINR(e.gst_amount) : '—'}</td>
+            <td style="font-weight:600;font-family:'Inter',monospace;">${formatINR(e.amount)}</td>
+            <td><span class="confidence-badge ${(e.confidence || 50) >= 70 ? 'confidence-high' : (e.confidence || 50) >= 40 ? 'confidence-mid' : 'confidence-low'}" title="Confidence: ${e.confidence || 50}%">${e.confidence || 50}%</span></td>
+            <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${e.source === 'email' ? '#4F46E5' : '#F97316'};margin-right:4px;"></span>${e.source}</td>
+            <td><button onclick="deleteExpense(${e.id})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.8rem;">🗑️</button></td>
+        </tr>`).join('');
+        }
+
+        async function deleteExpense(id) {
+            if (!confirm('Delete this expense?')) return;
+            try {
+                const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) loadReports();
+                else alert(data.error);
+            } catch (e) { alert('Failed to delete'); }
+        }
+
+        function exportCSV() {
+            if (!allExpenses.length) { alert('No data to export'); return; }
+            let csv = 'Date,Merchant,Category,Payment Method,GST (₹),Amount (₹),Source,Transaction ID\n';
+            allExpenses.forEach(e => {
+                csv += `${formatDate(e.date)},"${e.merchant || ''}","${e.category || ''}","${e.payment_method || ''}",${e.gst_amount || 0},${e.amount},"${e.source}","${e.transaction_id || ''}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `expenses_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReports);
+    </script>
+</body>
+
+</html>
