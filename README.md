@@ -118,14 +118,14 @@ EXPENSE_TRACKER_IOMP/
 
 **CMD:**
 ```
-python -m venv akshu
-akshu\Scripts\activate
+python -m venv myenv
+myenv\Scripts\activate
 ```
 
 **PowerShell:**
 ```
-python -m venv akshu
-akshu\Scripts\Activate.ps1
+python -m venv myenv
+myenv\Scripts\Activate.ps1
 ```
 
 ### 3. Install Dependencies
@@ -141,7 +141,7 @@ SECRET_KEY=your-strong-secret-key-here
 
 ### 5. Run the App
 ```
-akshu\Scripts\python.exe app.py
+myenv\Scripts\python.exe app.py
 ```
 
 Open **http://localhost:5000** in your browser.
