@@ -18,12 +18,15 @@ import atexit
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'smartmail-secret-key-change-in-production')
-app.config['DATABASE'] = 'instance/expenses.db'
-app.config['EMAIL_DB'] = 'instance/email_configs.db'
+
+# Use DATA_DIR env var for persistent storage (e.g. /var/data on Render)
+DATA_DIR = os.environ.get('DATA_DIR', 'instance')
+app.config['DATABASE'] = os.path.join(DATA_DIR, 'expenses.db')
+app.config['EMAIL_DB'] = os.path.join(DATA_DIR, 'email_configs.db')
 CORS(app)
 
 # Create instance folder if it doesn't exist
-os.makedirs('instance', exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs('templates', exist_ok=True)
 os.makedirs('static', exist_ok=True)
 
@@ -2713,7 +2716,9 @@ signal.signal(signal.SIGTERM, signal_handler)
 if __name__ == '__main__':
     on_startup()
     try:
-        app.run(debug=True, port=5000, use_reloader=False)
+        debug_mode = os.environ.get('FLASK_ENV', 'production') == 'development'
+        port = int(os.environ.get('PORT', 5000))
+        app.run(debug=debug_mode, port=port, use_reloader=False)
     except Exception as e:
         print(f"\n❌ Error: {e}")
         on_shutdown()
